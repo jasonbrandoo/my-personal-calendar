@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Month from './Month';
 import Modal from './Modal';
+import monthNames from '../utils/calender';
 
 function Calender() {
   const today = new Date();
@@ -39,48 +40,122 @@ function Calender() {
     });
   }
 
-  // var getDaysInMonth = function(month,year) {
-  // Here January is 1 based
-  // Day 0 is the last day in the previous month
-  // return new Date(year, month, 0).getDate();
-  // Here January is 0 based
-  // return new Date(year, month+1, 0).getDate();
-  // };
-  // console.log(getDaysInMonth(1, 2012));
-  // console.log(getDaysInMonth(2, 2012));
-  // console.log(getDaysInMonth(9, 2012));
-  // console.log(getDaysInMonth(12, 2012));
-
   function showCalendar(month, year) {
     const firstDay = new Date(year, month).getDay();
     const daysInMonth = 32 - new Date(year, month, 32).getDate();
+
+    /*
+     * I THINK THIS CODE NEED REFACTORING
+     *
+     * Check if state have event
+     * and fill it in array
+     *
+     * @return array (currentDaysInMonthHasEvent)
+     * @return array (currentMonthHasEvent)
+     * @return array (currentDateHasEvent)
+     */
+    const currentDaysInMonthHasEvent = [];
+    const currentMonthHasEvent = [];
+    const currentDateHasEvent = [];
+    localState.forEach(({ date }) => {
+      const dateHasEvent = new Date(date);
+      const exactDateEvent = dateHasEvent.getDate();
+      const yearHasEvent = dateHasEvent.getFullYear();
+      const monthHasEvent = dateHasEvent.getMonth();
+      currentDaysInMonthHasEvent.push(
+        new Date(yearHasEvent, monthHasEvent + 1, 0).getDate(),
+      );
+      currentMonthHasEvent.push(monthHasEvent);
+      currentDateHasEvent.push(exactDateEvent);
+    });
+
+    /*
+     * Previous month
+     *
+     * @return array (blanks)
+     */
     const blanks = [];
     for (let i = 0; i < firstDay; i += 1) {
       const key = Math.random();
       blanks.push(<td className="calender__body--blanks" key={key} />);
     }
 
-    const days = [];
-    let hasEvent;
-    for (let i = 1; i <= daysInMonth; i += 1) {
-      const currentDate = i === currentDay;
-      const key = Math.random();
-      for (let j = 0; j < localState.length; j += 1) {
-        const eventDate = new Date(localState[j].date).getDate();
-        if (eventDate === i) {
-          hasEvent = eventDate;
-          break;
+    /*
+     * I THINK THIS CODE NEED REFACTORING
+     *
+     * Check if each month has event
+     *
+     * @return boolean (checkMonth)
+     * @return number (totalEventDayInMonth)
+     * @return array (dateHaveEventInMonth)
+     */
+    let checkMonth = false;
+    let totalEventDayInMonth;
+    const dateHaveEventInMonth = [];
+    for (let j = 0; j < currentMonthHasEvent.length; j += 1) {
+      if (monthNames[currentMonthHasEvent[j]] === monthNames[currentMonth]) {
+        for (let k = 0; k < currentDaysInMonthHasEvent.length; k += 1) {
+          if (currentDaysInMonthHasEvent[k] === daysInMonth) {
+            checkMonth = true;
+            totalEventDayInMonth = currentDaysInMonthHasEvent[k];
+          }
         }
       }
-      if (hasEvent === i) {
-        days.push(
-          <td key={key} className="calender__body--has-event">
-            <button type="button" onClick={() => openModal(i, month, year)}>
-              {i}
-            </button>
-          </td>,
+    }
+    for (let l = 0; l < localState.length; l += 1) {
+      const tes = new Date(localState[l].date).getMonth();
+      if (monthNames[tes] === monthNames[currentMonth]) {
+        dateHaveEventInMonth.push(
+          new Date(year, tes, currentDateHasEvent[l]).getDate(),
         );
-      } else {
+      }
+    }
+
+    /*
+     * Fill calender with current date
+     * and check if current month have event
+     *
+     * @return array (days)
+     */
+    const days = [];
+    let hasEvent;
+    if (checkMonth) {
+      for (let i = 1; i <= totalEventDayInMonth; i += 1) {
+        const currentDate = i === new Date(year, month, currentDay).getDate();
+        const key = Math.random();
+        for (let j = 0; j < dateHaveEventInMonth.length; j += 1) {
+          if (dateHaveEventInMonth[j] === i) {
+            hasEvent = dateHaveEventInMonth[j];
+            break; // I don't know if this line is necessary?
+          }
+        }
+        if (hasEvent === i) {
+          days.push(
+            <td key={key} className="calender__body--has-event">
+              <button type="button" onClick={() => openModal(i, month, year)}>
+                {i}
+              </button>
+            </td>,
+          );
+        } else {
+          days.push(
+            <td
+              key={key}
+              className={
+                currentDate ? 'calender__body--today' : 'calender__body--date'
+              }
+            >
+              <button type="button" onClick={() => openModal(i, month, year)}>
+                {i}
+              </button>
+            </td>,
+          );
+        }
+      }
+    } else {
+      for (let i = 1; i <= daysInMonth; i += 1) {
+        const currentDate = i === new Date(year, month, currentDay).getDate();
+        const key = Math.random();
         days.push(
           <td
             key={key}
@@ -96,15 +171,14 @@ function Calender() {
       }
     }
 
-    //     const dayHasEvent = [];
-    //     for (let i = 1; i <= days.length; i += 1) {
-    //       console.log(i);
-    //     }
-
+    /*
+     * Fill date each week
+     *
+     * @return array (rows)
+     */
     const slots = [...blanks, ...days];
     const rows = [];
     let cells = [];
-
     slots.forEach((row, i) => {
       if (i % 7 !== 0) {
         cells.push(row);
@@ -118,6 +192,11 @@ function Calender() {
       }
     });
 
+    /*
+     * Fill each row with date
+     *
+     * @return React.Component
+     */
     const dayrows = rows.map((d) => {
       const key = Math.random();
       return <tr key={key}>{d}</tr>;
