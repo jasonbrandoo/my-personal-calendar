@@ -1,18 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import monthNames from '../utils/calender';
 
-function Modal({ open, setOpen, dmy, addEvent }) {
-  const [event, setEvent] = useState('');
+const defaultProps = {
+  event: {},
+};
+
+const propTypes = {
+  open: PropTypes.bool.isRequired,
+  setOpen: PropTypes.func.isRequired,
+  dmy: PropTypes.shape({
+    date: PropTypes.number,
+    month: PropTypes.number,
+    year: PropTypes.number,
+  }).isRequired,
+  addEvent: PropTypes.func.isRequired,
+  event: PropTypes.shape({
+    note: PropTypes.string,
+    date: PropTypes.string,
+  }),
+};
+
+function Modal({ open, setOpen, dmy, addEvent, event }) {
+  const [input, setInput] = useState(event);
+
+  useEffect(() => {
+    setInput(event);
+  }, [event]);
 
   function handleInput(e) {
-    setEvent(e.target.value);
+    setInput(e.target.value);
   }
 
   function handleSubmit(e) {
     e.preventDefault();
     addEvent(event, dmy.date, dmy.month, dmy.year);
     setOpen(false);
-    setEvent('');
+    setInput('');
   }
 
   return (
@@ -26,13 +50,16 @@ function Modal({ open, setOpen, dmy, addEvent }) {
             id="input"
             className="modal__input"
             onChange={handleInput}
-            value={event}
+            value={input.note ? input.note : ''}
           />
           <div className="modal__button">
             <button
               type="button"
               className="modal__button--cancel"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                setInput({});
+              }}
             >
               Cancel
             </button>
@@ -45,5 +72,8 @@ function Modal({ open, setOpen, dmy, addEvent }) {
     </div>
   );
 }
+
+Modal.defaultProps = defaultProps;
+Modal.propTypes = propTypes;
 
 export default Modal;

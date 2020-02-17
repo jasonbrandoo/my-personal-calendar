@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import monthNames from '../utils/calender';
+import PropTypes from 'prop-types';
+import monthNames from '../../utils/calender';
+
+const propTypes = {
+  selectMonth: PropTypes.func.isRequired,
+  currentMonth: PropTypes.number.isRequired,
+  year: PropTypes.number.isRequired,
+};
 
 function Month({ selectMonth, currentMonth, year }) {
   const [open, setOpen] = useState(false);
@@ -9,7 +16,7 @@ function Month({ selectMonth, currentMonth, year }) {
   }
 
   function handleOpen() {
-    setOpen((prevState) => !prevState);
+    setOpen(prevState => !prevState);
   }
 
   function getMonth() {
@@ -46,7 +53,7 @@ function Month({ selectMonth, currentMonth, year }) {
       }
     });
 
-    const monthList = rows.map((row) => {
+    const monthList = rows.map(row => {
       const key = Math.random();
       return (
         <div className="month__body-row" key={key}>
@@ -70,5 +77,7 @@ function Month({ selectMonth, currentMonth, year }) {
     </div>
   );
 }
+
+Month.propTypes = propTypes;
 
 export default Month;

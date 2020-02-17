@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import Month from './Month';
-import Modal from './Modal';
-import monthNames from '../utils/calender';
+import Modal from '../Modal';
+import monthNames from '../../utils/calender';
 
-function Calender() {
+function Calendar() {
   const today = new Date();
   const currentDay = today.getDate();
   const [currentMonth, setCurrentMonth] = useState(today.getMonth());
   const [currentYear, setCurrentYear] = useState(today.getFullYear());
   const [dmy, setDMY] = useState({});
+  const [event, setEvent] = useState({});
   const [localState, setLocalState] = useState(
     JSON.parse(localStorage.getItem('My-Events')) || [],
   );
@@ -32,12 +33,20 @@ function Calender() {
   }
 
   function openModal(d, m, y) {
+    const matchEvent = localState.find(
+      (value) => new Date(value.date).getDate() === d,
+    );
     setOpen((prevState) => !prevState);
     setDMY({
       date: d,
       month: m,
       year: y,
     });
+    if (matchEvent) {
+      setEvent(matchEvent);
+    } else {
+      setEvent({});
+    }
   }
 
   function showCalendar(month, year) {
@@ -121,12 +130,12 @@ function Calender() {
     let hasEvent;
     if (checkMonth) {
       for (let i = 1; i <= totalEventDayInMonth; i += 1) {
-        const currentDate = i === new Date(year, month, currentDay).getDate();
+        const currentDate =
+          i === currentDay && currentMonth === new Date().getMonth();
         const key = Math.random();
         for (let j = 0; j < dateHaveEventInMonth.length; j += 1) {
           if (dateHaveEventInMonth[j] === i) {
             hasEvent = dateHaveEventInMonth[j];
-            break; // I don't know if this line is necessary?
           }
         }
         if (hasEvent === i) {
@@ -154,7 +163,8 @@ function Calender() {
       }
     } else {
       for (let i = 1; i <= daysInMonth; i += 1) {
-        const currentDate = i === new Date(year, month, currentDay).getDate();
+        const currentDate =
+          i === currentDay && currentMonth === new Date().getMonth();
         const key = Math.random();
         days.push(
           <td
@@ -207,8 +217,14 @@ function Calender() {
 
   return (
     <>
-      <h1>My Fucking Events</h1>
-      <Modal open={open} setOpen={setOpen} dmy={dmy} addEvent={addEvent} />
+      <h1>My Events</h1>
+      <Modal
+        open={open}
+        setOpen={setOpen}
+        dmy={dmy}
+        addEvent={addEvent}
+        event={event}
+      />
       <Month
         selectMonth={selectMonth}
         currentMonth={currentMonth}
@@ -234,4 +250,4 @@ function Calender() {
   );
 }
 
-export default Calender;
+export default Calendar;
