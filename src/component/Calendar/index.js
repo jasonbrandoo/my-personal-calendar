@@ -29,14 +29,16 @@ function Calendar() {
       note: text,
       date: newDate,
     };
-    setLocalState((prevState) => [...prevState, newEvent]);
+    setLocalState(prevState => [...prevState, newEvent]);
   }
 
   function openModal(d, m, y) {
     const matchEvent = localState.find(
-      (value) => new Date(value.date).getDate() === d,
+      value =>
+        new Date(value.date).getDate() === d &&
+        new Date(value.date).getMonth() === m,
     );
-    setOpen((prevState) => !prevState);
+    setOpen(prevState => !prevState);
     setDMY({
       date: d,
       month: m,
@@ -207,7 +209,7 @@ function Calendar() {
      *
      * @return React.Component
      */
-    const dayrows = rows.map((d) => {
+    const dayrows = rows.map(d => {
       const key = Math.random();
       return <tr key={key}>{d}</tr>;
     });

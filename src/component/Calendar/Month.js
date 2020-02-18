@@ -9,7 +9,7 @@ const propTypes = {
 };
 
 function Month({ selectMonth, currentMonth, year }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   function handleClick(index) {
     selectMonth(index);
